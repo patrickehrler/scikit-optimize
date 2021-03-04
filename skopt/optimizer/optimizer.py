@@ -76,7 +76,7 @@ class Optimizer(object):
         Sets a initial points generator. Can be either
 
         - `"random"` for uniform random numbers,
-        - `"sobol"` for a Sobol' sequence,
+        - `"sobol"` for a Sobol sequence,
         - `"halton"` for a Halton sequence,
         - `"hammersly"` for a Hammersly sequence,
         - `"lhs"` for a latin hypercube sequence,
@@ -170,7 +170,10 @@ class Optimizer(object):
                  random_state=None,
                  model_queue_size=None,
                  acq_func_kwargs=None,
-                 acq_optimizer_kwargs=None):
+                 acq_optimizer_kwargs=None,
+                 n_features=10):
+        self.n_features = n_features
+                 
         self.specs = {"args": copy.copy(inspect.currentframe().f_locals),
                       "function": "Optimizer"}
         self.rng = check_random_state(random_state)
@@ -242,7 +245,7 @@ class Optimizer(object):
             else:
                 acq_optimizer = "sampling"
 
-        if acq_optimizer not in ["lbfgs", "sampling"]:
+        if acq_optimizer not in ["lbfgs", "sampling", "n_sampling"]:
             raise ValueError("Expected acq_optimizer to be 'lbfgs' or "
                              "'sampling', got {0}".format(acq_optimizer))
 
@@ -322,7 +325,8 @@ class Optimizer(object):
             acq_optimizer=self.acq_optimizer,
             acq_func_kwargs=self.acq_func_kwargs,
             acq_optimizer_kwargs=self.acq_optimizer_kwargs,
-            random_state=random_state
+            random_state=random_state,
+            n_features=self.n_features
         )
         optimizer._initial_samples = self._initial_samples
         if hasattr(self, "gains_"):
@@ -549,8 +553,14 @@ class Optimizer(object):
 
             # even with BFGS as optimizer we want to sample a large number
             # of points and then pick the best ones as starting points
-            X = self.space.transform(self.space.rvs(
-                n_samples=self.n_points, random_state=self.rng))
+            if self.acq_optimizer == "n_sampling":
+                # only sample points of acquisition function with n_features 
+                X = self.space.transform(self.space.custom_rvs(
+                    n_samples=self.n_points, n_features=self.n_features, random_state=self.rng))
+            else:
+                X = self.space.transform(self.space.rvs(
+                    n_samples=self.n_points, random_state=self.rng))
+                
 
             self.next_xs_ = []
             for cand_acq_func in self.cand_acq_funcs_:
@@ -560,7 +570,7 @@ class Optimizer(object):
                     acq_func_kwargs=self.acq_func_kwargs)
                 # Find the minimum of the acquisition function by randomly
                 # sampling points from the space
-                if self.acq_optimizer == "sampling":
+                if self.acq_optimizer == "sampling" or self.acq_optimizer == "n_sampling":
                     next_x = X[np.argmin(values)]
 
                 # Use BFGS to find the mimimum of the acquisition function, the
