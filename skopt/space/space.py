@@ -864,6 +864,23 @@ class Space(object):
         space = cls(dimensions=dimensions)
 
         return space
+        
+    def custom_rvs(self, n_samples=1, n_features=10, random_state=None):
+        rng = check_random_state(random_state)
+        total_features = len(self.dimensions) 
+        
+        # Draw
+        row = []
+        instance = np.array([0 for _ in range(0,total_features-n_features)] + [1 for _ in range(0,n_features)])
+        
+        for i in range(0, n_samples):
+            x = list(instance) # make copy
+            np.random.shuffle(x)
+            row.append(x)
+
+
+        # Transpose
+        return row
 
     def rvs(self, n_samples=1, random_state=None):
         """Draw random samples.
