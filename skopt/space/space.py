@@ -866,20 +866,41 @@ class Space(object):
         return space
         
     def custom_rvs(self, n_samples=1, n_features=10, random_state=None):
+        """Draw random samples.
+
+        Exactly n_features samples will be 1, others 0
+
+        Parameters
+        ----------
+        n_samples : int, default=1
+            Number of samples to be drawn from the space.
+        
+        n_features : int, default=10
+            Number of selected features
+
+        random_state : int, RandomState instance, or None (default)
+            Set random state to something other than None for reproducible
+            results.
+
+        Returns
+        -------
+        points : list of lists, shape=(n_points, n_dims)
+           Points sampled from the space.
+        """
+
         rng = check_random_state(random_state)
+        
         total_features = len(self.dimensions) 
         
         # Draw
         row = []
         instance = np.array([0 for _ in range(0,total_features-n_features)] + [1 for _ in range(0,n_features)])
         
-        for i in range(0, n_samples):
+        for _ in range(0, n_samples):
             x = list(instance) # make copy
             np.random.shuffle(x)
             row.append(x)
 
-
-        # Transpose
         return row
 
     def rvs(self, n_samples=1, random_state=None):
