@@ -250,10 +250,10 @@ class Optimizer(object):
                              "'sampling', got {0}".format(acq_optimizer))
 
         if (not has_gradients(self.base_estimator_) and
-                acq_optimizer != "sampling"):
+                (acq_optimizer != "sampling" and acq_optimizer != "n_sampling")):
             raise ValueError("The regressor {0} should run with "
                              "acq_optimizer"
-                             "='sampling'.".format(type(base_estimator)))
+                             "='sampling' or ='n_sampling'.".format(type(base_estimator)))
         self.acq_optimizer = acq_optimizer
 
         # record other arguments
