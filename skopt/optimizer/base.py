@@ -28,7 +28,7 @@ def base_minimize(func, dimensions, base_estimator,
                   acq_func="EI", acq_optimizer="lbfgs",
                   x0=None, y0=None, random_state=None, verbose=False,
                   callback=None, n_points=10000, n_restarts_optimizer=5,
-                  xi=0.01, kappa=1.96, n_jobs=1, model_queue_size=None):
+                  xi=0.01, kappa=1.96, n_jobs=1, model_queue_size=None, n_features=10):
     """Base optimizer class
 
     Parameters
@@ -84,7 +84,7 @@ def base_minimize(func, dimensions, base_estimator,
         Sets a initial points generator. Can be either
 
         - `"random"` for uniform random numbers,
-        - `"sobol"` for a Sobol' sequence,
+        - `"sobol"` for a Sobol sequence,
         - `"halton"` for a Halton sequence,
         - `"hammersly"` for a Hammersly sequence,
         - `"lhs"` for a latin hypercube sequence,
@@ -261,7 +261,8 @@ def base_minimize(func, dimensions, base_estimator,
                           random_state=random_state,
                           model_queue_size=model_queue_size,
                           acq_optimizer_kwargs=acq_optimizer_kwargs,
-                          acq_func_kwargs=acq_func_kwargs)
+                          acq_func_kwargs=acq_func_kwargs,
+                          n_features=n_features)
     # check x0: element-wise data type, dimensionality
     assert all(isinstance(p, Iterable) for p in x0)
     if not all(len(p) == optimizer.space.n_dims for p in x0):
@@ -294,7 +295,7 @@ def base_minimize(func, dimensions, base_estimator,
         result.specs = specs
         if eval_callbacks(callbacks, result):
             return result
-
+    
     # Optimize
     for n in range(n_calls):
         next_x = optimizer.ask()
