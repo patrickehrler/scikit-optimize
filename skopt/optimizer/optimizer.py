@@ -435,7 +435,10 @@ class Optimizer(object):
             # this will not make a copy of `self.rng` and hence keep advancing
             # our random state.
             if self._initial_samples is None:
-                return self.space.rvs(random_state=self.rng)[0]
+                if self.acq_optimizer == "n_sampling":
+                    return self.space.custom_rvs(n_features=self.n_features, random_state=self.rng)[0]
+                else:
+                    return self.space.rvs(random_state=self.rng)[0]
             else:
                 # The samples are evaluated starting form initial_samples[0]
                 return self._initial_samples[
